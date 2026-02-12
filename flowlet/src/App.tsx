@@ -1,35 +1,37 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import {useEffect, useState} from "react";
+import "./App.css";
+import TransactionForm from "./TransactionForm.tsx";
+import TransactionList from "./TransactionList.tsx";
 
-function App() {
-  const [count, setCount] = useState(0)
-
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+export interface Transaction {
+    transactionId: string;
+    transactionDate: string;
+    amount: number;
+    transactionType: string;
+    memo: string;
 }
 
-export default App
+function App() {
+    const [transactions, setTransactions] = useState<Transaction[]>([]);
+
+    const fetchTransactions = async () => {
+        const response = await fetch("http://localhost:8080/api/transactions");
+        const data = await response.json();
+        setTransactions(data);
+    };
+
+    useEffect(() => {
+        fetchTransactions();
+    }, []);
+
+
+    return (
+        <>
+            <h1>FLOWLET</h1>
+            <TransactionForm onSuccess={fetchTransactions}/>
+            <TransactionList transactions={transactions}/>
+        </>
+    );
+}
+
+export default App;
