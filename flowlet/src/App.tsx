@@ -20,6 +20,7 @@ export interface PeriodSummary {
 
 function App() {
     const [transactions, setTransactions] = useState<Transaction[]>([]);
+    const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
     const [summary, setSummary] = useState<{ current: PeriodSummary, previous: PeriodSummary } | null>(null);
 
     const fetchTransactions = async () => {
@@ -48,6 +49,9 @@ function App() {
         fetchSummary();
     }, []);
 
+    const startEdit = (transaction: Transaction) => {
+        setEditingTransaction(transaction);
+    };
 
     return (
         <>
@@ -85,13 +89,19 @@ function App() {
                 </div>
             )}
 
-            <TransactionForm onSuccess={() => {
-                fetchTransactions();
-                fetchSummary();
-            }}/>
+            <TransactionForm
+                onSuccess={() => {
+                    fetchTransactions();
+                    fetchSummary();
+                    setEditingTransaction(null);
+                }}
+                editingTransaction={editingTransaction}
+            />
 
             <TransactionList transactions={transactions}
-                             onDelete={deleteTransaction}/>
+                             onEdit={startEdit}
+                             onDelete={deleteTransaction}
+            />
         </>
     );
 }
