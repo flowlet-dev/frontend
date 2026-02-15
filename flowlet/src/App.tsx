@@ -28,6 +28,15 @@ function App() {
         setTransactions(data);
     };
 
+    const deleteTransaction = async (transactionId: string) => {
+        await fetch(`http://localhost:8080/api/transactions/${transactionId}`, {
+            method: "DELETE",
+        });
+
+        await fetchTransactions();
+        await fetchSummary();
+    };
+
     const fetchSummary = async () => {
         const response = await fetch("http://localhost:8080/api/transactions/summary");
         const data = await response.json();
@@ -81,7 +90,8 @@ function App() {
                 fetchSummary();
             }}/>
 
-            <TransactionList transactions={transactions}/>
+            <TransactionList transactions={transactions}
+                             onDelete={deleteTransaction}/>
         </>
     );
 }
