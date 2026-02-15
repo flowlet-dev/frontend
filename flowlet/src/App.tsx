@@ -11,9 +11,14 @@ export interface Transaction {
     memo: string;
 }
 
+export interface PeriodSummary {
+    income: number;
+    expense: number;
+}
+
 function App() {
     const [transactions, setTransactions] = useState<Transaction[]>([]);
-    const [summary, setSummary] = useState<{ income: number, expense: number } | null>(null);
+    const [summary, setSummary] = useState<{ current: PeriodSummary, previous: PeriodSummary } | null>(null);
 
     const fetchTransactions = async () => {
         const response = await fetch("http://localhost:8080/api/transactions");
@@ -22,7 +27,7 @@ function App() {
     };
 
     const fetchSummary = async () => {
-        const response = await fetch("http://localhost:8080/api/transactions/summary/current");
+        const response = await fetch("http://localhost:8080/api/transactions/summary");
         const data = await response.json();
         setSummary(data);
     };
@@ -40,9 +45,14 @@ function App() {
             {summary && (
                 <div>
                     <h2>今期収支</h2>
-                    <p>収入: {summary.income} 円</p>
-                    <p>支出: {summary.expense} 円</p>
-                    <p>差額: {summary.income - summary.expense} 円</p>
+                    <p>収入: {summary.current.income} 円</p>
+                    <p>支出: {summary.current.expense} 円</p>
+                    <p>差額: {summary.current.income - summary.current.expense} 円</p>
+
+                    <h2>前期収支</h2>
+                    <p>収入: {summary.previous.income} 円</p>
+                    <p>支出: {summary.previous.expense} 円</p>
+                    <p>差額: {summary.previous.income - summary.previous.expense} 円</p>
                 </div>
             )}
 
