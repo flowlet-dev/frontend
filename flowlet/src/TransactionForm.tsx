@@ -6,13 +6,27 @@ interface Props {
     editingTransaction: Transaction | null;
 }
 
-function TransactionForm({onSuccess, editingTransaction}: Props) {
-    const [transactionDate, setTransactionData] = useState("");
-    const [amount, setAmount] = useState(0);
-    const [transactionType, setTransactionType] = useState("EXPENSE");
-    const [memo, setMemo] = useState("");
+type TransactionType = "EXPENSE" | "INCOME";
 
-    const handleSubmit = async (e: Event) => {
+type FormState = {
+    transactionDate: string;
+    amount: number;
+    transactionType: TransactionType;
+    memo: string;
+};
+
+const emptyForm: FormState = {
+    transactionDate: "",
+    amount: 0,
+    transactionType: "EXPENSE",
+    memo: ""
+};
+
+function TransactionForm({onSuccess, editingTransaction}: Props) {
+    const [form, setForm] = useState<FormState>(emptyForm);
+
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         const method = editingTransaction ? "PUT" : "POST";
@@ -25,7 +39,7 @@ function TransactionForm({onSuccess, editingTransaction}: Props) {
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({transactionDate, amount, transactionType, memo})
+            body: JSON.stringify(form)
         });
 
         onSuccess();
@@ -33,34 +47,39 @@ function TransactionForm({onSuccess, editingTransaction}: Props) {
 
     useEffect(() => {
         if (editingTransaction) {
-            setTransactionData(editingTransaction.transactionDate);
-            setAmount(editingTransaction.amount);
-            setTransactionType(editingTransaction.transactionType);
-            setMemo(editingTransaction.memo);
-        } else {
-            setTransactionData("");
-            setAmount(0);
-            setTransactionType("EXPENSE");
-            setMemo("");
+            setForm({
+                transactionDate: editingTransaction.transactionDate,
+                amount: editingTransaction.amount,
+                transactionType: editingTransaction.transactionType as TransactionType,
+                memo: editingTransaction.memo
+            });
+            return;
         }
+
+        setForm(emptyForm);
+
     }, [editingTransaction]);
 
     return (
         <form onSubmit={handleSubmit}>
             <input type="date"
-                   value={transactionDate}
-                   onChange={(e) => setTransactionData(e.target.value)}
-                   required/>
+                   value={form.transactionDate}
+                   onChange={(e) => setForm((prev) => ({...prev, transactionDate: e.currentTarget.value}))}
+                   required
+            />
 
             <input type="number"
-                   value={amount}
-                   onChange={(e) => setAmount(Number(e.target.value))}
+                   value={form.amount}
+                   onChange={(e) => setForm((prev) => ({...prev, amount: Number(e.currentTarget.value)}))}
                    required
             />
 
             <select
-                value={transactionType}
-                onChange={(e) => setTransactionType(e.target.value)}>
+                value={form.transactionType}
+                onChange={(e) =>
+                    setForm((prev) => ({...prev, transactionType: e.currentTarget.value as TransactionType}))
+                }
+            >
                 <option value="EXPENSE">支出</option>
                 <option value="INCOME">収入</option>
             </select>
@@ -68,8 +87,8 @@ function TransactionForm({onSuccess, editingTransaction}: Props) {
             <input
                 type="text"
                 placeholder={"メモ"}
-                value={memo}
-                onChange={(e) => setMemo(e.target.value)}
+                value={form.memo}
+                onChange={(e) => setForm((prev) => ({...prev, memo: e.currentTarget.value}))}
             />
 
             <button type={"submit"}>{editingTransaction ? "更新" : "登録"}</button>
